@@ -1,6 +1,5 @@
-package com.example.feedback2
+package com.example.feedback2.data
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert

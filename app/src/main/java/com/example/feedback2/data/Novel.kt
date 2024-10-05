@@ -1,4 +1,4 @@
-package com.example.feedback2
+package com.example.feedback2.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,10 +1,11 @@
-package com.example.feedback2
+package com.example.feedback2.userInterface
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import com.example.feedback2.data.Novel
 
 class NovelAdapter (private var novels: List<Novel>) : BaseAdapter(){
 

@@ -3,7 +3,7 @@ package com.example.feedback2.repository
 import android.app.Application
 import com.example.feedback2.data.Novel
 import com.example.feedback2.data.NovelDAO
-import com.example.feedback2.data.NovelDatabase
+import com.example.feedback2.data.Database.NovelDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutorService

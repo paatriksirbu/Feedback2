@@ -13,7 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.feedback2.R
 import com.example.feedback2.data.Novel
-import com.example.feedback2.data.NovelDatabase
+import com.example.feedback2.data.Database.NovelDatabase
 import com.example.feedback2.data.Review
 import kotlinx.coroutines.launch
 

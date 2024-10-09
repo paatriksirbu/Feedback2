@@ -1,10 +1,14 @@
-package com.example.feedback2.data
+package com.example.feedback2.data.Database
 
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.feedback2.data.Novel
+import com.example.feedback2.data.NovelDAO
+import com.example.feedback2.data.Review
+import com.example.feedback2.data.ReviewDAO
 
 @Database(entities = [Novel::class, Review::class], version = 1)
 abstract class NovelDatabase : RoomDatabase() {

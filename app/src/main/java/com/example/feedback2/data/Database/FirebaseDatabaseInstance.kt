@@ -4,6 +4,8 @@ import com.google.firebase.database.FirebaseDatabase
 object FirebaseDatabaseInstance {
 
     val instance: FirebaseDatabase by lazy {
-        FirebaseDatabase.getInstance()
+        FirebaseDatabase.getInstance().apply {
+            setPersistenceEnabled(true)
+        }
     }
 }

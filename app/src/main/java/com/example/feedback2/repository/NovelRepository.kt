@@ -27,17 +27,24 @@ class NovelRepository(private val novelDAO: NovelDAO) {
 
 
     suspend fun getAllNovels(): List<Novel> = suspendCancellableCoroutine { continuation ->
-        database.addListenerForSingleValueEvent(object : ValueEventListener {
+
+        val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+        database.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val novels = snapshot.children.mapNotNull {
                     it.getValue(Novel::class.java)
                 }
-                continuation.resume(novels)
+
+                try{
+                    novelDAO.insertAll(novels)
+                    continuation.resume(novels)
+                } catch (e: Exception){
+                    continuation.resumeWithException(e)
+                }
             }
 
             override fun onCancelled(error: DatabaseError) {
                 continuation.resumeWithException(error.toException())
-
             }
         })
     }
@@ -59,12 +66,62 @@ class NovelRepository(private val novelDAO: NovelDAO) {
     }
 
     suspend fun updateNovel(novel: Novel){
-        database.child(novel.id).setValue(novel).await()
+        try{
+            val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+
+            if (novel.userId != userId){
+                throw Exception("No tienes permiso para editar esta novela")
+            }
+
+            //Actualizamos en la base de datos de firebase
+            database.child(userId).child(novel.id).setValue(novel).await()
+
+            //De esta manera actualizamos en la base de datos local
+            novelDAO.update(novel)
+        } catch (e: Exception){
+            e.printStackTrace()
+            throw e
+        }
     }
 
-    suspend fun deleteNovel(id: String){
-        database.child(id).removeValue().await()
+    suspend fun deleteNovel(novelId: String){
+        try{
+            val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+
+            //Primero eliminamos de firebase
+            database.child(userId).child(novelId).removeValue().await()
+            //Posteriormente, eliminamos de la base de datos local
+            novelDAO.delete(novelId)
+        } catch (e: Exception){
+            e.printStackTrace()
+            throw e
+        }
     }
 
+    suspend fun getAllNovelsFromLocal(): List<Novel>{
+        return try {
+            novelDAO.getAllNovels()
+        } catch (e: Exception){
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun getNovelById(novelId: String): Novel?{
+        return try{
+            val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+            val snapshot = database.child(userId).child(novelId).get().await() //Obtenemos la novela de firebase
+
+            val novel = snapshot.getValue(Novel::class.java)
+
+            novel?.let{ //Si la novela existe, la actualizamos en la base de datos local
+                novelDAO.insert(it) //Actualizamos la base de datos local
+            }
+            novel
+        } catch (e: Exception){ //Si la novela no existe o da error, devolvemos null
+            e.printStackTrace()
+            throw e
+        }
+    }
 
 }

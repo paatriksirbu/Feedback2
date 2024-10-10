@@ -5,6 +5,7 @@ import com.example.feedback2.data.Database.FirebaseDatabaseInstance
 import com.example.feedback2.data.Novel
 import com.example.feedback2.data.NovelDAO
 import com.example.feedback2.data.Database.NovelDatabase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -19,9 +20,10 @@ import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.resume
 
 
-class NovelRepository {
+class NovelRepository(private val novelDAO: NovelDAO) {
 
     private val database : DatabaseReference = FirebaseDatabaseInstance.instance.getReference("novels")
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
 
     suspend fun getAllNovels(): List<Novel> = suspendCancellableCoroutine { continuation ->
@@ -41,9 +43,19 @@ class NovelRepository {
     }
 
     suspend fun addNovel(novel: Novel){
-        val novelId = database.push().key ?: return
-        novel.id = novelId
-        database.child(novelId).setValue(novel).await()
+        try {
+            val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+            val novelId = database.push().key ?: throw Exception("Error al generar el ID de la novela")
+
+            novel.userId = userId
+            novel.id = novelId
+
+            database.child(userId).child(novelId).setValue(novel).await()
+            novelDAO.insert(novel)
+        } catch (e: Exception){
+            e.printStackTrace() //Registrar el error para la depuracion.
+            throw e //Lanzamos la excepcion para poder manejarla en la UI
+        }
     }
 
     suspend fun updateNovel(novel: Novel){

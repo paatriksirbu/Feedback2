@@ -11,6 +11,7 @@ data class Novel(
     val title: String = "",
     val author: String = "",
     val description: String = "",
-    val reviews: List<Review> = emptyList()
+    val reviews: List<Review> = emptyList(),
+    var userId: String = ""
 
 )

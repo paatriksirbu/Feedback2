@@ -9,5 +9,5 @@ data class Review(
     val id: Int = 0,
     val novelId: Int,
     val rating: Float,
-    val description: String = ""
+    val description: String
 )

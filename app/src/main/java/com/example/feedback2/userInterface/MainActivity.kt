@@ -2,23 +2,20 @@ package com.example.feedback2.userInterface
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.Toast
-import android.widget.ArrayAdapter
-import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.room.InvalidationTracker
 import com.example.feedback2.R
+import com.example.feedback2.data.Database.NovelDatabase
 import com.example.feedback2.data.Novel
-import com.example.feedback2.userInterface.NovelAdapter
-import com.example.feedback2.userInterface.NovelViewModel
 import com.example.feedback2.databinding.PopupAddNovelBinding
 import com.example.feedback2.databinding.PopupDeleteNovelBinding
 import com.example.feedback2.databinding.PopupWatchNovelBinding
+import com.example.feedback2.repository.NovelRepository
 import java.util.Calendar
 
 
@@ -27,14 +24,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonAddBook: Button
     private lateinit var listViewNovels: ListView
     private lateinit var novelAdapter: NovelAdapter
-    private val novelViewModel: NovelViewModel by viewModels(){
-        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-    }
+    private lateinit var novelViewModel: NovelViewModel
+    private lateinit var novelRepository: NovelRepository
     private val novels: MutableList<Novel> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val database = NovelDatabase.getInstance(this)
+        novelRepository = NovelRepository(database.novelDao())
+
+        val viewModelFactory = NovelViewModelFactory(application, novelRepository)
+
+        novelViewModel = ViewModelProvider(this, viewModelFactory).get(NovelViewModel::class.java)
+
 
         //Configuramos la lista y el adaptador.
         listViewNovels = findViewById(R.id.listViewNovels)
@@ -73,19 +77,19 @@ class MainActivity : AppCompatActivity() {
     //Configuramos los observadores del ViewModel para poder actualizar la UI
     private fun setupViewModelObservers(){
         //Primero obtenemos la lista de novelas.
-        novelViewModel.novels.observe(this, Observer { updatedNovels ->
+        novelViewModel.novels.observe(this) { updatedNovels ->
             novels.clear()
             novels.addAll(updatedNovels)
             novelAdapter.notifyDataSetChanged()
-        })
+        }
 
-        novelViewModel.operationStatus.observe(this, Observer { result ->
+        novelViewModel.operationStatus.observe(this) { result ->
             result.onSuccess{
                 Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
             }.onFailure{
                 Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
 
     private fun showPopupAddNovel() {
@@ -108,7 +112,7 @@ class MainActivity : AppCompatActivity() {
                         return@setPositiveButton
                     }
 
-                    val nuevaNovela = Novel(title = titulo, author = autor, year = year.toInt())
+                    val nuevaNovela = Novel(title = titulo, author = autor, year = year.toInt(), description = "", reviews = emptyList(), userId = "")
                     novelViewModel.insert(nuevaNovela)
                     novelAdapter.notifyDataSetChanged()
                 } else {

@@ -6,26 +6,37 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NovelDAO {
 
+   // Inserta una novela, sin retornar ningún objeto
    @Insert(onConflict = OnConflictStrategy.REPLACE)
-   fun insert(novel: Novel)
+   suspend fun insert(novel: Novel)
 
+   // Inserta múltiples novelas, sin retornar ningún objeto
    @Insert(onConflict = OnConflictStrategy.REPLACE)
-   fun insertAll(novels: List<Novel>)
+   suspend fun insertAll(novels: List<Novel>)
 
+   // Inserta una reseña, sin retornar ningún objeto
    @Insert(onConflict = OnConflictStrategy.REPLACE)
-   fun insertReview(review: Review)
+   suspend fun insertReview(review: Review)
 
-   @Update
-   fun update(novel: Novel)
-
-   @Delete
-   fun delete(novel: String)
-
+   // Obtiene todas las novelas como un flujo de datos
    @Query("SELECT * FROM novels")
-   suspend fun getAllNovels(): List<Novel>
+   fun getAllNovels(): Flow<List<Novel>>
 
+   // Elimina una novela por su ID, retornando el número de filas eliminadas
+   @Query("DELETE FROM novels WHERE id = :novelId")
+   suspend fun delete(novelId: Int): Int
+
+   // Obtiene todas las reseñas de una novela por su ID
+   @Query("SELECT * FROM reviews WHERE novelId = :novelId")
+   suspend fun getReviewsByNovelId(novelId: Int): List<Review>
+
+   // Actualiza una novela
+   @Update
+   suspend fun update(novel: Novel)
 }
+

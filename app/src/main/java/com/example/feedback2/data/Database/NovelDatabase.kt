@@ -1,20 +1,20 @@
 package com.example.feedback2.data.Database
 
-
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import com.example.feedback2.data.Converters
 import com.example.feedback2.data.Novel
 import com.example.feedback2.data.NovelDAO
 import com.example.feedback2.data.Review
-import com.example.feedback2.data.ReviewDAO
 
-@Database(entities = [Novel::class, Review::class], version = 1)
+@Database(entities = [Novel::class, Review::class], version = 1, exportSchema = false)
+@TypeConverters(Converters::class)
 abstract class NovelDatabase : RoomDatabase() {
 
     abstract fun novelDao(): NovelDAO
-    abstract fun reviewDao(): ReviewDAO
 
     companion object {
         @Volatile
@@ -26,12 +26,12 @@ abstract class NovelDatabase : RoomDatabase() {
                     context.applicationContext,
                     NovelDatabase::class.java,
                     "novel_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
         }
     }
-
-
 }

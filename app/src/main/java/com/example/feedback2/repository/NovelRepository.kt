@@ -12,6 +12,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import java.util.concurrent.ExecutorService
@@ -37,8 +39,10 @@ class NovelRepository(private val novelDAO: NovelDAO) {
                 }
 
                 try{
-                    novelDAO.insertAll(novels)
-                    continuation.resume(novels)
+                    GlobalScope.launch(Dispatchers.IO) {
+                        novelDAO.insertAll(novels)
+                        continuation.resume(novels)
+                    }
                 } catch (e: Exception){
                     continuation.resumeWithException(e)
                 }
@@ -56,7 +60,7 @@ class NovelRepository(private val novelDAO: NovelDAO) {
             val novelId = database.push().key ?: throw Exception("Error al generar el ID de la novela")
 
             novel.userId = userId
-            novel.id = novelId
+            novel.id = novelId.toInt()
 
             database.child(userId).child(novelId).setValue(novel).await()
             novelDAO.insert(novel)
@@ -69,13 +73,12 @@ class NovelRepository(private val novelDAO: NovelDAO) {
     suspend fun updateNovel(novel: Novel){
         try{
             val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
-
             if (novel.userId != userId){
                 throw Exception("No tienes permiso para editar esta novela")
             }
 
             //Actualizamos en la base de datos de firebase
-            database.child(userId).child(novel.id).setValue(novel).await()
+            database.child(userId).child(novel.id.toString()).setValue(novel).await()
 
             //De esta manera actualizamos en la base de datos local
             novelDAO.update(novel)
@@ -92,7 +95,7 @@ class NovelRepository(private val novelDAO: NovelDAO) {
             //Primero eliminamos de firebase
             database.child(userId).child(novelId).removeValue().await()
             //Posteriormente, eliminamos de la base de datos local
-            novelDAO.delete(novelId)
+            novelDAO.delete(novelId.toInt())
         } catch (e: Exception){
             e.printStackTrace()
             throw e

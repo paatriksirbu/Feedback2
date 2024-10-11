@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.feedback2.data.Novel
 import com.example.feedback2.repository.NovelRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.internal.NopCollector.emit
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -31,6 +30,7 @@ class NovelViewModel(private val novelRepository: NovelRepository) : ViewModel()
         }
     }
 
+    //Todos los metodos de esta clase actuan sobre la Firebase y la base de datos local.
     //Sincronizamos todas las novelas desde Firebase y actualizamos la base de datos local.
     fun syncNovels() = viewModelScope.launch(Dispatchers.IO){
         try {

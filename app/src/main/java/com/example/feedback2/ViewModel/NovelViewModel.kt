@@ -12,9 +12,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class NovelViewModel(private val novelRepository: NovelRepository) : ViewModel() {
+
     //Usamos LiveData para poder ver los resultados de sincronizacion en tiempo real.
     private val _syncStatus = MutableLiveData<Result<String>>()
     val syncStatus: LiveData<Result<String>> = _syncStatus
+
     //Usamos LiveData para poder ver los datos de la base de datos local en tiempo real en la UI.
     private val _novels = MutableLiveData<List<Novel>>()
     val novels: LiveData<List<Novel>> = _novels

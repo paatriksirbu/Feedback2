@@ -77,7 +77,7 @@ class MainActivity : AppCompatActivity() {
                         return@setPositiveButton
                     }
 
-                    val nuevaNovela = Novel(titulo = titulo, autor = autor, year = year.toInt())
+                    val nuevaNovela = Novel(title = titulo, author = autor, year = year.toInt())
                     novels.add(nuevaNovela)
                     novelAdapter.notifyDataSetChanged()
                 } else {
@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val listaTitulos = novels.map { "${it.titulo} (${it.year})" }.toTypedArray()
+        val listaTitulos = novels.map { "${it.title} (${it.year})" }.toTypedArray()
 
 
         val dialog = AlertDialog.Builder(this).apply {
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
                     novels.removeAt(selectedIndex)
                     novelAdapter.notifyDataSetChanged()
 
-                    Toast.makeText(this@MainActivity, "Novela '${novelaSeleccionada.titulo}' eliminada", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Novela '${novelaSeleccionada.title}' eliminada", Toast.LENGTH_SHORT).show()
                 }
                 dialog.dismiss()
             }
@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
     private fun showPopupReviews() {
         val dialog = AlertDialog.Builder(this)
             .setTitle("Seleccionar Novela")
-            .setItems(novels.map { it.titulo }.toTypedArray()) { _, which ->
+            .setItems(novels.map { it.title }.toTypedArray()) { _, which ->
                 // Obtener el ID de la novela seleccionada
                 val selectedNovel = novels[which]
                 val intent = Intent(this, ReviewsActivity::class.java).apply {

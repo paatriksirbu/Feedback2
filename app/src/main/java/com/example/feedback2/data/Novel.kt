@@ -10,6 +10,7 @@ data class Novel(
     var id: String = "",
     val title: String = "",
     val author: String = "",
+    val year: Int = 0,
     val description: String = "",
     val reviews: List<Review> = emptyList(),
     var userId: String = ""

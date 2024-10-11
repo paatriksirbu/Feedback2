@@ -50,13 +50,17 @@ class ReviewsActivity : AppCompatActivity() {
         }
 
         submitButton.setOnClickListener {
+
             val rating = ratingBar.rating
+
             val reviewText = reviewEditText.text.toString()
             val selectedNovelIndex = spinnerNovels.selectedItemPosition
 
             if (selectedNovelIndex >= 0 && selectedNovelIndex < novels.size) {
                 val selectedNovel = novels[selectedNovelIndex]
-                val review = Review(novelId = selectedNovel.id, rating = rating, description = reviewText)
+                val novelId = selectedNovel.id.toInt()
+
+                val review = Review(novelId = novelId, rating = rating, description = reviewText)
 
                 lifecycleScope.launch {
                     try {
@@ -100,7 +104,7 @@ class ReviewsActivity : AppCompatActivity() {
                     novels.addAll(novelsFromDb)
                     Log.d("Cargar novelas", "Novelas cargadas: $novels")
 
-                    val titulos = novels.map { it.titulo }.toTypedArray()
+                    val titulos = novels.map { it.title }.toTypedArray()
                     val adapter = ArrayAdapter(this@ReviewsActivity, android.R.layout.simple_spinner_item, titulos)
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spinnerNovels.adapter = adapter

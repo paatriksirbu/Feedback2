@@ -25,7 +25,7 @@ object NotificationHelper {
             }
         }
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.syncIcon)
+            .setSmallIcon(R.drawable.sync_icon)
             .setContentTitle("Sincronización completada")
             .setContentText("Se han sincronizado los datos correctamente")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.feedback2.data.Novel
+import com.example.feedback2.data.Review
 import com.example.feedback2.repository.NovelRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -116,6 +117,22 @@ class NovelViewModel(application: Application, private val repository: NovelRepo
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
                     onResult(null)
+                }
+            }
+        }
+    }
+
+    fun insertReview(review: Review) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                repository.insertReview(review)
+                withContext(Dispatchers.Main) {
+                    _operationStatus.value =
+                        Result.success("Reseña añadida exitosamente")
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    _operationStatus.value = Result.failure(e)
                 }
             }
         }

@@ -5,6 +5,7 @@ import com.example.feedback2.data.Database.FirebaseDatabaseInstance
 import com.example.feedback2.data.Novel
 import com.example.feedback2.data.NovelDAO
 import com.example.feedback2.data.Database.NovelDatabase
+import com.example.feedback2.data.Review
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -119,6 +120,22 @@ class NovelRepository(private val novelDAO: NovelDAO) {
             }
             novel
         } catch (e: Exception){ //Si la novela no existe o da error, devolvemos null
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun insertReview(review: Review) {
+        try {
+            val userId = auth.currentUser?.uid ?: throw Exception("Usuario no autenticado")
+            val reviewId = database.push().key ?: throw Exception("Error al generar el ID de la reseña")
+
+            // Aquí se guarda la reseña en Firebase
+            database.child(userId).child("reviews").child(reviewId).setValue(review).await()
+
+            // Y también se guarda en la base de datos local
+            novelDAO.insertReview(review)
+        } catch (e: Exception) {
             e.printStackTrace()
             throw e
         }

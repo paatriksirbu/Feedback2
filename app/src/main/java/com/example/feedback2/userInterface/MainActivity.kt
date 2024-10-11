@@ -6,10 +6,16 @@ import android.widget.Button
 import android.widget.ListView
 import android.widget.Toast
 import android.widget.ArrayAdapter
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.room.InvalidationTracker
 import com.example.feedback2.R
 import com.example.feedback2.data.Novel
+import com.example.feedback2.userInterface.NovelAdapter
+import com.example.feedback2.userInterface.NovelViewModel
 import com.example.feedback2.databinding.PopupAddNovelBinding
 import com.example.feedback2.databinding.PopupDeleteNovelBinding
 import com.example.feedback2.databinding.PopupWatchNovelBinding
@@ -21,22 +27,29 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonAddBook: Button
     private lateinit var listViewNovels: ListView
     private lateinit var novelAdapter: NovelAdapter
-    private lateinit var novelViewModel: NovelViewModel
+    private val novelViewModel: NovelViewModel by viewModels(){
+        ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+    }
     private val novels: MutableList<Novel> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        //Configuramos la lista y el adaptador.
         listViewNovels = findViewById(R.id.listViewNovels)
         novelAdapter = NovelAdapter(novels)
         listViewNovels.adapter = novelAdapter
 
-
+        //Configuracion de los botones.
         val buttonAddNovel = findViewById<Button>(R.id.buttonAddNovel)
         val buttonDeleteNovel = findViewById<Button>(R.id.buttonDeleteNovel)
         val buttonReviews = findViewById<Button>(R.id.buttonReviews)
         val buttonWatchNovels = findViewById<Button>(R.id.buttonWatchNovels)
+
+        setupViewModelObservers()
+
+        novelViewModel.loadAllNovels()
 
 
        buttonAddNovel.setOnClickListener {
@@ -55,6 +68,24 @@ class MainActivity : AppCompatActivity() {
             showPopupWatchNovels()
         }
 
+    }
+
+    //Configuramos los observadores del ViewModel para poder actualizar la UI
+    private fun setupViewModelObservers(){
+        //Primero obtenemos la lista de novelas.
+        novelViewModel.novels.observe(this, Observer { updatedNovels ->
+            novels.clear()
+            novels.addAll(updatedNovels)
+            novelAdapter.notifyDataSetChanged()
+        })
+
+        novelViewModel.operationStatus.observe(this, Observer { result ->
+            result.onSuccess{
+                Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+            }.onFailure{
+                Toast.makeText(this, "Error: ${it.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun showPopupAddNovel() {
@@ -78,7 +109,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     val nuevaNovela = Novel(title = titulo, author = autor, year = year.toInt())
-                    novels.add(nuevaNovela)
+                    novelViewModel.insert(nuevaNovela)
                     novelAdapter.notifyDataSetChanged()
                 } else {
                     Toast.makeText(this@MainActivity, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show()
@@ -93,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     private fun showPopupDeleteNovel() {
         val binding = PopupDeleteNovelBinding.inflate(layoutInflater)
 
-        //Verificamos si hay novelas en la lista para poder eliminar
+        //Verificar si hay novelas en la lista para poder eliminar
         if (novels.isEmpty()) {
             Toast.makeText(this, "No hay novelas para eliminar", Toast.LENGTH_SHORT).show()
             return
@@ -115,7 +146,7 @@ class MainActivity : AppCompatActivity() {
                 if (selectedIndex >= 0) {
                     // Eliminar la novela seleccionada
                     val novelaSeleccionada = novels[selectedIndex]
-                    novels.removeAt(selectedIndex)
+                    novelViewModel.delete(novelaSeleccionada.id.toString())
                     novelAdapter.notifyDataSetChanged()
 
                     Toast.makeText(this@MainActivity, "Novela '${novelaSeleccionada.title}' eliminada", Toast.LENGTH_SHORT).show()

@@ -16,6 +16,9 @@ interface NovelDAO {
    @Insert(onConflict = OnConflictStrategy.REPLACE)
    fun insertAll(novels: List<Novel>)
 
+   @Insert(onConflict = OnConflictStrategy.REPLACE)
+   fun insertReview(review: Review)
+
    @Update
    fun update(novel: Novel)
 
